@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DJ Game Project 2", "Assembly-CSharp.csproj", "{E7E26C3B-1E43-371C-56BF-0F9E7E3B771A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DJ Game Project 2", "Assembly-CSharp-Editor.csproj", "{C191049D-699D-9E36-7C33-3994F69E1F89}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E7E26C3B-1E43-371C-56BF-0F9E7E3B771A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7E26C3B-1E43-371C-56BF-0F9E7E3B771A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7E26C3B-1E43-371C-56BF-0F9E7E3B771A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7E26C3B-1E43-371C-56BF-0F9E7E3B771A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C191049D-699D-9E36-7C33-3994F69E1F89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C191049D-699D-9E36-7C33-3994F69E1F89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C191049D-699D-9E36-7C33-3994F69E1F89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C191049D-699D-9E36-7C33-3994F69E1F89}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = Assembly-CSharp.csproj
+	EndGlobalSection
+EndGlobal

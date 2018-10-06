@@ -1,0 +1,136 @@
+;Written by Iain McCurdy, 2010
+
+;Modified for QuteCsound by René, November 2010, updated Feb 2011
+;Tested on Ubuntu 10.04 with csound-float 5.13.0 and QuteCsound svn rev 817
+
+;Notes on modifications from original csd:
+;	Add table(s) for exp slider
+;	Add Browser for audio files
+;	Instrument 1 is activated by MIDI and by the GUI, portamento added
+;	Add Init instrument 4
+
+;my flags on Ubuntu: -iadc -odac -b1024 -B2048 -+rtaudio=alsa -+rtmidi=alsa -Ma -m0 --midi-key-oct=4 --midi-velocity-amp=5
+<Cabbage>
+hslider channel("Time_Scaling"), range(-2.0, 2.0, 1.0)
+button channel("_Browse")
+</Cabbage>
+<CsoundSynthesizer>
+<CsOptions>
+-n -d -m0d
+--env:SSDIR+=../SourceMaterials
+</CsOptions>
+<CsInstruments>
+sr 		= 44100	;SAMPLE RATE
+ksmps 	= 32		;NUMBER OF AUDIO SAMPLES IN EACH CONTROL CYCLE
+nchnls 	= 2		;NUMBER OF CHANNELS (2=STEREO)
+0dbfs	= 1
+
+
+giFFTsizes	ftgen	0,0,8,-2,128,256,512,1024,2048,4096,8192	;FFT SIZES
+giExp4		ftgen	0, 0, 129, -25, 0, 0.125, 128, 4.0			;TABLE FOR EXP SLIDER
+
+
+instr	10	;GUI
+	ktrig	metro	10
+	if (ktrig == 1)	then
+		ktimescal	chnget:k("Time_Scaling")	
+		kpitch		invalue	"Pitch"
+		gkpitch		tablei	kpitch, giExp4, 1
+					outvalue	"Pitch_Value", gkpitch
+		gkamp		invalue	"Amp"
+
+		gklock		invalue	"Lock"
+		gkFFTsize		invalue	"FFTsize"
+	endif
+endin
+
+instr 1
+	if p4!=0 then																	;MIDI
+		ioct		= p4																;READ OCT VALUE FROM MIDI INPUT
+
+		;PITCH BEND===========================================================================================================================================================
+		iSemitoneBendRange = 4														;PITCH BEND RANGE IN SEMITONES
+		imin		= 0																;EQUILIBRIUM POSITION
+		imax		= iSemitoneBendRange * .0833333										;MAX PITCH DISPLACEMENT (IN oct FORMAT)
+		kbend	pchbend	imin, imax												;PITCH BEND VARIABLE (IN oct FORMAT)
+		kfreq	=	cpsoct(ioct + kbend) / cpsoct(8)									;(CONVERT TO RATIO: MIDDLE C IS POINT OF UNISON)
+		;=====================================================================================================================================================================
+	else																			;GUI
+		kfreq		= gkpitch														;SET FUNDEMENTAL TO SLIDER "pitch"
+	endif
+
+	kporttime		linseg	0,0.001,0.02												;CREATE A VARIABLE FUNCTION THAT RAPIDLY RAMPS UP TO A SET VALUE	
+	kpitch		portk	kfreq, kporttime											;CUTOFF FREQ. IS A SMOOTHED VERSION OF SLIDER FOR CUTOFF FREQUENCY
+
+
+	Sfile_new		strcpy	""		;INIT TO EMPTY STRING
+
+	Sfile		chnget("_Browse")	
+	Sfile_old		strcpyk	Sfile_new
+	Sfile_new		strcpyk	Sfile
+	kfile 		strcmpk	Sfile_new, Sfile_old
+
+	if	kfile != 0	then															;IF A BANG HAD BEEN GENERATED IN THE LINE ABOVE
+			reinit	NEW_FILE														;REINITIALIZE FROM LABEL 'UPDATE'
+	endif
+	NEW_FILE:
+		
+	ifile	ftgentmp	0, 0, 0, 1, Sfile,0,0,1											;READ MONO OR STEREO AUDIO FILE CHANNEL 1
+			rireturn																;RETURN FROM REINITIALIZATION PASS
+
+	kamp			portk	gkamp, kporttime											;APPLY PORTAMENTO SMOOTHING TO AMPLITUDE SLIDER VALUE
+	
+	ktrigger		changed	gkFFTsize													;IF gkFFTsize CHANGES GENERATE A '1' (BANG)
+	if ktrigger=1 then																;IF THE ABOVE LINE HAS GENERATED A '1'...
+			reinit	UPDATE2														;BEGIN A REINITIALIZATION PASS FROM LABEL 'UPDATE2'
+	endif																		;END OF THIS CONDITIONAL BRANCH
+	UPDATE2:																		;LABEL CALLED 'UPDATE2'
+	ifftsize	table	i(gkFFTsize), giFFTsizes											;DERIVE CHOSEN FFT SIZE FROM ON SCREEN BUTTON BANK AND FFTsizes FUNCTION TABLE
+	asig		temposcal	ktimescal, kamp, kpitch, ifile, gklock, ifftsize	;, idecim, ithresh]
+			rireturn
+	aenv		linsegr	0,0.05,1,0.05,0												;DE-CLICKING ENVELOPE
+			outs		asig*aenv, asig*aenv											;SEND AUDIO TO OUTPUTS
+endin
+
+instr	2	;SET TIME SCALING SLIDER TO P4 DETERMINED VALUES
+	outvalue	"Time_Scaling", p4
+endin
+
+instr	3	;SET PITCH SCALING SLIDER TO P4 DETERMINED VALUES
+	outvalue	"Pitch", p4
+endin
+
+instr	4	;INIT
+	outvalue	"Amp", 0.5
+	outvalue	"Lock", 1
+	outvalue	"Pitch", 0.6
+	outvalue	"FFTsize", 3
+	outvalue	"Time_Scaling", 1.0
+endin
+</CsInstruments>
+<CsScore>
+;INSTR | START | DURATION
+i 10		0	   3600	;GUI
+i  4      0.1       0	;INIT
+</CsScore>
+</CsoundSynthesizer>
+
+
+
+<bsbPanel>
+ <label>Widgets</label>
+ <objectName/>
+ <x>100</x>
+ <y>100</y>
+ <width>320</width>
+ <height>240</height>
+ <visible>true</visible>
+ <uuid/>
+ <bgcolor mode="nobackground">
+  <r>255</r>
+  <g>255</g>
+  <b>255</b>
+ </bgcolor>
+</bsbPanel>
+<bsbPresets>
+</bsbPresets>

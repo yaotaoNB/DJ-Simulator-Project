@@ -1,0 +1,51 @@
+<Cabbage>
+form caption("Write FFT data to table"), size(300, 200)
+</Cabbage>
+<CsoundSynthesizer>
+<CsOptions>
+-n -d -m0d
+</CsOptions>
+<CsInstruments>
+sr 	= 	48000 
+ksmps 	= 	32
+nchnls 	= 	2
+0dbfs	=	1 
+
+;FFT table
+giampFFT  ftgen 1001,0,128,2,0
+
+;Iain McCurdy 2012, writes FFT contents to table
+instr 200
+	aLeft inch 1
+	aRight inch 2
+
+	/* INPUT */
+	ain = (aLeft+aRight)/2
+	/* FFT ATTRIBUTES */
+	ifftsize = 64
+	ioverlap = ifftsize/4
+	iwinsize = ifftsize
+	iwintype = 1
+	ain reverb ain, 1
+	fsig  pvsanal ain, ifftsize, ioverlap, iwinsize, iwintype
+	kflag  pvsftw fsig, giampFFT
+		 
+
+	outs aLeft, aRight
+
+	if metro(1)==1 then
+		k1 tab 0, 1001
+		k2 tab 16, 1001
+		k3 tab 32, 1001
+		k4 tab 64, 1001
+		printks "%d, %d, %d, %d", 0, k1, k2, k3, k4
+	endif
+
+endin 
+
+</CsInstruments>
+<CsScore>
+;play for a week...
+i200 0 [60*60*24*7]
+</CsScore>
+</CsoundSynthesizer>
